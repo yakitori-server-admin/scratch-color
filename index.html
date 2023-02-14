@@ -57,7 +57,7 @@
 			}
 
 			const hsv = color.toHsv();
-			result.innerHTML = `HSV: ${Math.floor(hsv.h * 0.2777777777777778)}, ${Math.floor(hsv.s * 100)}, ${Math.floor(hsv.v * 100)}`;
+			result.innerHTML = `色: ${Math.floor(hsv.h * 0.2777777777777778)} 鮮やかさ: ${Math.floor(hsv.s * 100)} 明るさ: ${Math.floor(hsv.v * 100)}`;
 		});
 
 		inputType.addEventListener('change', () => {
