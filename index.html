@@ -1,104 +1,74 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>Scratchのための色の表現</title>
-        <style>
-            :root {
-                background: linear-gradient(90deg, rgba(141,194,111,1) 0%, rgba(118,184,82,1) 50%);
-            }
-            #form {
-                background: #FFFFFF;
-                display: block;
-                max-width: 360px;
-                margin: 0 auto 100px;
-                padding: 45px;
-                text-align: center;
-                box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
-            }
-            #form input, #form output {
-                font-family: "Roboto", sans-serif;
-                outline: 0;
-                background: #f2f2f2;
-                width: 100%;
-                border: 0;
-                margin: 0 0 15px;
-                padding: 15px;
-                box-sizing: border-box;
-                font-size: 14px;
-            }
-            #form button {
-                font-family: "Roboto", sans-serif;
-                text-transform: uppercase;
-                outline: 0;
-                background: #4CAF50;
-                width: 100%;
-                border: 0;
-                padding: 15px;
-                color: #FFFFFF;
-                font-size: 14px;
-                -webkit-transition: all 0.3 ease;
-                transition: all 0.3 ease;
-                cursor: pointer;
-            }
-            #form button:hover, #form button:active, #form button:focus {
-                background: #43A047;
-            }
-            #form output {
-                text-align: start;
-                display: none;
-                margin: 15px auto 0;
-            }
-            #colorPreview {
-                display: block;
-                max-width: 360px;
-                margin: 0 auto 15px;
-                padding: 45px;
-                text-align: center;
-                box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
-            }
-        </style>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
-        <script>
-            const RGBToHSL = (r, g, b) => {
-            [r, g, b] = [r, g, b].map(v => v / 255);
-            const l = Math.max(r, g, b),
-                    s = l - Math.min(r, g, b),
-                    h = s ? l === r ? (g - b) / s : l === g ? 2 + (b - r) / s : 4 + (r - g) / s : 0;
-            return [
-                $('output').css('display', 'block'),
-                $('output #hue').text(`色相: ${round((60 * h < 0 ? 60 * h + 360 : 60 * h) * 100 / 360, 0)}`),
-                $('output #saturation').text(`彩度: ${round(100 * (s ? (l <= 0.5 ? s / (2 * l - s) : s / (2 - (2 * l - s))) : 0), 0)}`),
-                $('output #lightness').text(`明度: ${round((100 * (2 * l - s)) / 2, 0)}`),
-            ];
-            };
+<html lang="ja">
+<head>
+	<title>Scratch のための色表現</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tinycolor/1.4.1/tinycolor.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+	<h1>Scratch のための色表現</h1>
+    <label for="input-type">入力タイプを選択:</label>
+	<select id="input-type">
+		<option value="rgb">RGB</option>
+		<option value="hex">16進数</option>
+	</select>
 
-            const round = (value, decimalPlaces) => Math.round(value * 10 ** decimalPlaces) / 10 ** decimalPlaces;
+	<div id="rgb-inputs">
+		<label for="red">赤:</label>
+		<input type="number" id="red" min="0" max="255">
+		<label for="green">緑:</label>
+		<input type="number" id="green" min="0" max="255">
+		<label for="blue">青:</label>
+		<input type="number" id="blue" min="0" max="255">
+	</div>
 
-            $(document).ready(() => {
-                $('button[type="submit"]').on('click', () => {
-                    RGBToHSL(...['red', 'green', 'blue'].map(c => $('input[name="' + c + '"]').val()));
-                });
+	<div id="hex-input" style="display: none;">
+		<label for="hex">16進数:</label>
+		<input type="text" id="hex" maxlength="7" value="#">
+	</div>
 
-                $('input').on('input', function(){
-                    var maxLength = 3;
-                    var inputValue = $(this).val();
-                    if (inputValue.length > maxLength) {
-                    $(this).val(inputValue.substr(0, maxLength));
-                    }
-                    $('#colorPreview').css('background-color', 'rgb(' + $('input[name="red"]').val() + ', ' + $('input[name="green"]').val() + ', ' + $('input[name="blue"]').val() + ')')
-                });
-            });
-        </script>
-    </head>
-    <body>
-        <div id="form">
-            <input type="number" name="red" placeholder="赤" max="255" min="0" maxlength="3" minlength="1">
-            <input type="number" name="green" placeholder="緑" max="255" min="0" maxlength="3" minlength="1">
-            <input type="number" name="blue" placeholder="青" max="255" min="0" maxlength="3" minlength="1">
-            <div id="colorPreview"></div>
-            <button type="submit">送信</button>
-            <output><span id="hue"></span><br><span id="saturation"></span><br><span id="lightness"></span></output>
-        </div>
-    </body>
+	<button id="convert-btn">変換</button>
+
+	<div id="result"></div>
+
+	<script>
+		const convertBtn = document.getElementById('convert-btn');
+		const inputType = document.getElementById('input-type');
+		const rgbInputs = document.getElementById('rgb-inputs');
+		const hexInput = $('#hex-input');
+		const result = document.getElementById('result');
+
+        $(document).ready(function() {
+            if($('#input-type').val() === 'rgb') {
+                $('#rgb-inputs').show();
+                $('#hex-input').hide();
+            } else {
+                $('#hex-input').show();
+                $('#rgb-inputs').hide();
+            }
+        });
+
+		convertBtn.addEventListener('click', () => {
+			let color;
+			if (inputType.value === 'rgb') {
+				color = tinycolor({ r: parseInt(document.getElementById('red').value), g: parseInt(document.getElementById('green').value), b: parseInt(document.getElementById('blue').value) });
+			} else {
+				color = tinycolor(document.getElementById('hex').value);
+			}
+
+			const hsv = color.toHsv();
+			result.innerHTML = `HSV: ${Math.floor(hsv.h * 0.2777777777777778)}, ${Math.floor(hsv.s * 100)}, ${Math.floor(hsv.v * 100)}`;
+		});
+
+		inputType.addEventListener('change', () => {
+			if (inputType.value === 'rgb') {
+				rgbInputs.style.display = 'block';
+				hexInput.hide();
+			} else {
+				rgbInputs.style.display = 'none';
+				hexInput.show();
+			}
+		});
+	</script>
+</body>
 </html>
