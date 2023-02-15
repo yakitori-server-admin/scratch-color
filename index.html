@@ -2,34 +2,89 @@
 <html lang="ja">
 <head>
 	<title>Scratch のための色表現</title>
+    <style>
+        body {
+            background: linear-gradient(-45deg, #87CEFA, #F08080);
+        }
+
+        body * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, 游ゴシック, 'Yu Gothic', YuGothic, 'Hiragino Gothic ProN', 'Hiragino Gothic Pro', HGSゴシックE, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #form {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 32px 16px;
+            background-color: #fff;
+            box-shadow: 0 2px 8px #00000040;
+        }
+
+        #form > * {
+            margin-bottom: 16px;
+        }
+
+input {
+  border: none;
+  outline: none;
+  font-size: 16px;
+  padding: 10px 0;
+  border-bottom: 2px solid #ccc;
+}
+
+input:focus {
+    border-bottom: 2px solid;
+  border-image: linear-gradient(-45deg, #87CEFA, #F08080) 1 1;
+  border-color: #6ab4d8;
+  outline: none;
+}
+
+button {
+  background: linear-gradient(-45deg, #87CEFA, #F08080);
+  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+
+  cursor: pointer;
+}
+
+button:hover {
+  background: linear-gradient(-45deg, #a5d8f3, #daa4a4);
+}
+
+button:active {
+  background: linear-gradient(-45deg, #498cbf, #c45b5b);
+}
+    </style>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/tinycolor/1.4.1/tinycolor.min.js"></script>
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-	<h1>Scratch のための色表現</h1>
-    <label for="input-type">入力タイプを選択:</label>
-	<select id="input-type">
-		<option value="rgb">RGB</option>
-		<option value="hex">16進数</option>
-	</select>
-
-	<div id="rgb-inputs">
-		<label for="red">赤:</label>
-		<input type="number" id="red" min="0" max="255" value="0">
-		<label for="green">緑:</label>
-		<input type="number" id="green" min="0" max="255" value="0">
-		<label for="blue">青:</label>
-		<input type="number" id="blue" min="0" max="255" value="0">
-	</div>
-
-	<div id="hex-input" style="display: none;">
-		<label for="hex">16進数:</label>
-		<input type="text" id="hex" maxlength="7" value="#">
-	</div>
-
-	<button id="convert-btn">変換</button>
-
-	<div id="result"></div>
+    <div id="form">
+        <h1>Scratch のための色表現</h1>
+    
+        <div id="rgb-inputs">
+            <input type="number" id="red" placeholder="赤" min="0" max="255" value="0">
+            <input type="number" id="green" placeholder="緑" min="0" max="255" value="0">
+            <input type="number" id="blue" placeholder="青" min="0" max="255" value="0">
+        </div>
+    
+        <div id="hex-input" style="display: none;">
+            <input type="text" id="hex" placeholder="16進数" maxlength="7" value="#000">
+        </div>
+    
+        <button id="convert-btn">変換</button>
+        <button id="input-type">16進数</button>
+    
+        <div id="result"></div>
+    </div>
 
 	<script>
 		const convertBtn = document.getElementById('convert-btn');
@@ -39,13 +94,11 @@
 		const result = document.getElementById('result');
 
         $(document).ready(function() {
-            if($('#input-type').val() === 'rgb') {
-                $('#rgb-inputs').show();
-                $('#hex-input').hide();
-            } else {
-                $('#hex-input').show();
-                $('#rgb-inputs').hide();
-            }
+            $('input:not(#hex)').val(0);
+            $('#hex').val('#000');
+            $('#input-type').text('16進数');
+            $('#rgb-inputs').show();
+            $('#hex-input').hide();
         });
 
 		convertBtn.addEventListener('click', () => {
@@ -60,13 +113,17 @@
 			result.innerHTML = `色: ${Math.floor(hsv.h * 0.2777777777777778)} 鮮やかさ: ${Math.floor(hsv.s * 100)} 明るさ: ${Math.floor(hsv.v * 100)}`;
 		});
 
-		inputType.addEventListener('change', () => {
-			if (inputType.value === 'rgb') {
+		inputType.addEventListener('click', () => {
+            $('input:not(#hex)').val(0);
+            $('#hex').val('#000');
+			if ($('#input-type').text() === 'RGB') {
 				rgbInputs.style.display = 'block';
 				hexInput.hide();
+                $('#input-type').text('16進数')
 			} else {
 				rgbInputs.style.display = 'none';
 				hexInput.show();
+                $('#input-type').text('RGB');
 			}
 		});
 	</script>
